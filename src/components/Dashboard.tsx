@@ -15,7 +15,13 @@ interface DashboardProps {
 }
 
 export function Dashboard({ userId }: DashboardProps) {
-  const { activities, currentActivity, isTracking } = useActivityTracker(userId);
+  const {
+    activities,
+    currentActivity,
+    isTracking,
+    startTracking,
+    stopTracking,
+  } = useActivityTracker(userId);
   const { completedSessions } = usePomodoroTimer(userId);
 
   // Calculate today's stats
@@ -77,11 +83,19 @@ export function Dashboard({ userId }: DashboardProps) {
           <h1 className="text-2xl font-bold text-white">Dashboard</h1>
           <p className="text-gray-300">Welcome back! Here's your productivity overview.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <div className={`w-3 h-3 rounded-full ${isTracking ? 'bg-gray-200' : 'bg-gray-600'}`} />
-          <span className="text-sm font-medium text-gray-300">
-            {isTracking ? 'Tracking Active' : 'Tracking Paused'}
-          </span>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className={`w-3 h-3 rounded-full ${isTracking ? 'bg-gray-200' : 'bg-gray-600'}`} />
+            <span className="text-sm font-medium text-gray-300">
+              {isTracking ? 'Tracking Active' : 'Tracking Paused'}
+            </span>
+          </div>
+          <button
+            onClick={isTracking ? stopTracking : startTracking}
+            className="px-4 py-2 rounded-lg font-medium transition-colors bg-gray-800 text-white hover:bg-gray-700"
+          >
+            {isTracking ? 'Stop Tracking' : 'Start Tracking'}
+          </button>
         </div>
       </div>
 
