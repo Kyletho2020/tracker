@@ -186,10 +186,36 @@ async function updateDailyStats(activity) {
 // Sync with main app (if configured)
 async function syncWithMainApp(activity) {
   try {
-    const result = await chrome.storage.local.get(['supabaseConfig', 'userToken']);
-    if (result.supabaseConfig && result.userToken) {
-      // Send to Supabase (implementation would depend on your setup)
-      console.log('Would sync activity to main app:', activity);
+    const { supabaseConfig, userToken } = await chrome.storage.local.get([
+      'supabaseConfig',
+      'userToken'
+    ]);
+
+    if (!supabaseConfig || !userToken) return;
+
+    const supabaseUrl = supabaseConfig.url || supabaseConfig.supabaseUrl;
+    const supabaseAnonKey = supabaseConfig.anonKey || supabaseConfig.supabaseAnonKey;
+
+    if (!supabaseUrl || !supabaseAnonKey) return;
+
+    // Extract user ID from JWT token
+    const payload = JSON.parse(atob(userToken.split('.')[1]));
+    const userId = payload?.sub;
+    if (!userId) throw new Error('Invalid user token');
+
+    const response = await fetch(`${supabaseUrl}/rest/v1/activities`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${userToken}`
+      },
+      body: JSON.stringify([{ ...activity, user_id: userId }])
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Failed to sync activity:', errorText);
     }
   } catch (error) {
     console.error('Error syncing with main app:', error);
