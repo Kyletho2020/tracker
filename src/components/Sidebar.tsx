@@ -3,8 +3,9 @@ import {
   BarChart3, 
   Clock, 
   Target, 
-  Activity, 
-  Settings, 
+  Activity,
+  ListChecks,
+  Settings,
   LogOut,
   Timer
 } from 'lucide-react';
@@ -22,6 +23,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
     { id: 'timer', label: 'Focus Timer', icon: Timer },
     { id: 'activities', label: 'Activities', icon: Activity },
+    { id: 'tasks', label: 'Tasks', icon: ListChecks },
     { id: 'goals', label: 'Goals', icon: Target },
     { id: 'analytics', label: 'Analytics', icon: Clock },
     { id: 'settings', label: 'Settings', icon: Settings },

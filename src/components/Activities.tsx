@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { 
-  Globe, 
-  Monitor, 
-  Clock, 
+import {
+  Globe,
+  Monitor,
   Filter,
   Search,
   TrendingUp,
@@ -135,7 +134,9 @@ export function Activities({ userId }: ActivitiesProps) {
             <Filter className="w-5 h-5 text-gray-400" />
             <select
               value={filter}
-              onChange={(e) => setFilter(e.target.value as any)}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                setFilter(e.target.value as 'all' | 'website' | 'application')
+              }
               className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
               <option value="all">All Activities</option>

@@ -4,18 +4,18 @@ import { dbHelpers } from '../lib/supabase';
 
 export type TimerMode = 'pomodoro' | 'short_break' | 'long_break';
 
+const TIMER_DURATIONS: Record<TimerMode, number> = {
+  pomodoro: 25 * 60,
+  short_break: 5 * 60,
+  long_break: 15 * 60,
+};
+
 export function usePomodoroTimer(userId: string | undefined) {
   const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutes in seconds
   const [isActive, setIsActive] = useState(false);
   const [mode, setMode] = useState<TimerMode>('pomodoro');
   const [currentSession, setCurrentSession] = useState<FocusSession | null>(null);
   const [completedSessions, setCompletedSessions] = useState(0);
-
-  const TIMER_DURATIONS = {
-    pomodoro: 25 * 60,
-    short_break: 5 * 60,
-    long_break: 15 * 60,
-  };
 
   // Start timer
   const startTimer = useCallback(async () => {

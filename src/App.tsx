@@ -6,6 +6,7 @@ import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
 import { FocusTimer } from './components/FocusTimer';
 import { Activities } from './components/Activities';
+import { Tasks } from './components/Tasks';
 
 function App() {
   const { user, loading } = useAuth();
@@ -34,6 +35,8 @@ function App() {
         return <FocusTimer userId={user.id} />;
       case 'activities':
         return <Activities userId={user.id} />;
+      case 'tasks':
+        return <Tasks userId={user.id} />;
       case 'goals':
         return (
           <div className="p-6">
