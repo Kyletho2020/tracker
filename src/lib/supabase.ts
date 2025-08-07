@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import type { Activity, FocusSession, Goal, Task } from '../types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -96,7 +97,47 @@ export const dbHelpers = {
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
-    
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Tasks
+  async createTask(task: Omit<Task, 'id' | 'created_at'> & { user_id: string }) {
+    const { data, error } = await supabase
+      .from('tasks')
+      .insert([task])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async updateTask(id: string, updates: Partial<Task>) {
+    const { data, error } = await supabase
+      .from('tasks')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async deleteTask(id: string) {
+    const { error } = await supabase.from('tasks').delete().eq('id', id);
+    if (error) throw error;
+  },
+
+  async getTasks(userId: string) {
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('user_id', userId)
+      .order('due_date', { ascending: true });
+
     if (error) throw error;
     return data;
   }

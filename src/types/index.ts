@@ -30,6 +30,15 @@ export interface Goal {
   created_at: Date;
 }
 
+export interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  completed: boolean;
+  due_date?: Date;
+  created_at: Date;
+}
+
 export interface DailyStats {
   date: string;
   total_productive_time: number;
