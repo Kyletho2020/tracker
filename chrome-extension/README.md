@@ -51,8 +51,8 @@ The extension automatically categorizes websites:
 ## Data Storage
 
 - All data is stored locally in Chrome's storage
-- No data is sent to external servers
-- Option to sync with main RizeTracker app (when configured)
+- No data is sent to external servers unless syncing is enabled
+- Option to sync activities to a Supabase backend (when configured)
 
 ## Permissions
 
