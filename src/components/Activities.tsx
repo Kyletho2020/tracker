@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { 
-  Globe, 
-  Monitor, 
-  Clock, 
+import {
+  Globe,
+  Monitor,
   Filter,
   Search,
   TrendingUp,
@@ -36,9 +35,9 @@ export function Activities({ userId }: ActivitiesProps) {
   };
 
   const getProductivityColor = (score: number) => {
-    if (score >= 4) return 'text-green-600 bg-green-100';
-    if (score >= 3) return 'text-yellow-600 bg-yellow-100';
-    return 'text-red-600 bg-red-100';
+    if (score >= 4) return 'text-gray-200 bg-gray-800';
+    if (score >= 3) return 'text-gray-400 bg-gray-800';
+    return 'text-gray-600 bg-gray-800';
   };
 
   const getProductivityIcon = (score: number) => {
@@ -64,23 +63,19 @@ export function Activities({ userId }: ActivitiesProps) {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Activity Tracking</h1>
-          <p className="text-gray-600">Monitor your digital activities and productivity</p>
+          <h1 className="text-2xl font-bold text-white">Activity Tracking</h1>
+          <p className="text-gray-400">Monitor your digital activities and productivity</p>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full ${isTracking ? 'bg-green-500' : 'bg-gray-400'}`} />
-            <span className="text-sm font-medium text-gray-700">
+            <div className={`w-3 h-3 rounded-full ${isTracking ? 'bg-gray-200' : 'bg-gray-600'}`} />
+            <span className="text-sm font-medium text-gray-300">
               {isTracking ? 'Tracking Active' : 'Tracking Paused'}
             </span>
           </div>
           <button
             onClick={isTracking ? stopTracking : startTracking}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              isTracking
-                ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                : 'bg-green-100 text-green-700 hover:bg-green-200'
-            }`}
+            className="px-4 py-2 rounded-lg font-medium transition-colors bg-gray-800 text-white hover:bg-gray-700"
           >
             {isTracking ? 'Stop Tracking' : 'Start Tracking'}
           </button>
@@ -93,9 +88,9 @@ export function Activities({ userId }: ActivitiesProps) {
           .sort(([,a], [,b]) => b.totalTime - a.totalTime)
           .slice(0, 3)
           .map(([category, stats]) => (
-            <div key={category} className="bg-white rounded-xl border border-gray-200 p-6">
+            <div key={category} className="bg-gray-900 rounded-xl border border-gray-700 p-6">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-gray-900">{category}</h3>
+                <h3 className="font-semibold text-white">{category}</h3>
                 <div className={`px-2 py-1 rounded-full text-xs font-medium ${
                   getProductivityColor(stats.avgProductivity)
                 }`}>
@@ -104,12 +99,12 @@ export function Activities({ userId }: ActivitiesProps) {
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Total Time</span>
-                  <span className="font-medium">{formatDuration(stats.totalTime)}</span>
+                  <span className="text-gray-400">Total Time</span>
+                  <span className="font-medium text-white">{formatDuration(stats.totalTime)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Activities</span>
-                  <span className="font-medium">{stats.count}</span>
+                  <span className="text-gray-400">Activities</span>
+                  <span className="font-medium text-white">{stats.count}</span>
                 </div>
               </div>
             </div>
@@ -117,26 +112,26 @@ export function Activities({ userId }: ActivitiesProps) {
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-gray-900 rounded-xl border border-gray-700 p-6">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
               <input
                 type="text"
                 placeholder="Search activities..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-700 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent bg-black text-white placeholder-gray-500"
               />
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Filter className="w-5 h-5 text-gray-400" />
+            <Filter className="w-5 h-5 text-gray-500" />
             <select
               value={filter}
-              onChange={(e) => setFilter(e.target.value as any)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              onChange={(e) => setFilter(e.target.value as 'all' | 'website' | 'application')}
+              className="border border-gray-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-gray-500 focus:border-transparent bg-black text-white"
             >
               <option value="all">All Activities</option>
               <option value="website">Websites</option>
@@ -147,30 +142,30 @@ export function Activities({ userId }: ActivitiesProps) {
       </div>
 
       {/* Activities List */}
-      <div className="bg-white rounded-xl border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Recent Activities</h2>
-          <p className="text-gray-600 text-sm">
+      <div className="bg-gray-900 rounded-xl border border-gray-700">
+        <div className="p-6 border-b border-gray-700">
+          <h2 className="text-lg font-semibold text-white">Recent Activities</h2>
+          <p className="text-gray-400 text-sm">
             Showing {filteredActivities.length} of {activities.length} activities
           </p>
         </div>
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-gray-700">
           {filteredActivities.slice(0, 20).map((activity) => {
             const ProductivityIcon = getProductivityIcon(activity.productivity_score);
             return (
-              <div key={activity.id} className="p-6 hover:bg-gray-50 transition-colors">
+              <div key={activity.id} className="p-6 hover:bg-gray-800 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center">
                       {activity.type === 'website' ? (
-                        <Globe className="w-5 h-5 text-gray-600" />
+                        <Globe className="w-5 h-5 text-gray-300" />
                       ) : (
-                        <Monitor className="w-5 h-5 text-gray-600" />
+                        <Monitor className="w-5 h-5 text-gray-300" />
                       )}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">{activity.name}</h3>
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <h3 className="font-semibold text-white">{activity.name}</h3>
+                      <div className="flex items-center gap-2 text-sm text-gray-400">
                         <span>{activity.category}</span>
                         {activity.url && (
                           <>
@@ -183,10 +178,10 @@ export function Activities({ userId }: ActivitiesProps) {
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <div className="font-semibold text-gray-900">
+                      <div className="font-semibold text-white">
                         {formatDuration(activity.duration)}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-400">
                         {new Date(activity.timestamp).toLocaleTimeString()}
                       </div>
                     </div>

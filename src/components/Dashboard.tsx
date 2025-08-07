@@ -44,28 +44,28 @@ export function Dashboard({ userId }: DashboardProps) {
       title: 'Total Time Today',
       value: formatDuration(totalTimeToday),
       icon: Clock,
-      color: 'bg-blue-500',
+      color: 'bg-gray-700',
       change: '+12%'
     },
     {
       title: 'Productive Time',
       value: formatDuration(productiveTime),
       icon: TrendingUp,
-      color: 'bg-green-500',
+      color: 'bg-gray-700',
       change: '+8%'
     },
     {
       title: 'Focus Sessions',
       value: completedSessions.toString(),
       icon: Target,
-      color: 'bg-purple-500',
+      color: 'bg-gray-700',
       change: '+3'
     },
     {
       title: 'Productivity Score',
       value: `${productivityScore}/5`,
       icon: Activity,
-      color: 'bg-orange-500',
+      color: 'bg-gray-700',
       change: productivityScore >= 4 ? '+0.2' : '-0.1'
     }
   ];
@@ -78,7 +78,7 @@ export function Dashboard({ userId }: DashboardProps) {
           <p className="text-gray-300">Welcome back! Here's your productivity overview.</p>
         </div>
         <div className="flex items-center gap-2">
-          <div className={`w-3 h-3 rounded-full ${isTracking ? 'bg-green-500' : 'bg-gray-400'}`} />
+          <div className={`w-3 h-3 rounded-full ${isTracking ? 'bg-gray-200' : 'bg-gray-600'}`} />
           <span className="text-sm font-medium text-gray-300">
             {isTracking ? 'Tracking Active' : 'Tracking Paused'}
           </span>
@@ -95,7 +95,7 @@ export function Dashboard({ userId }: DashboardProps) {
                 <div className={`w-12 h-12 ${stat.color} rounded-lg flex items-center justify-center`}>
                   <Icon className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-sm font-medium text-green-600">{stat.change}</span>
+                <span className="text-sm font-medium text-gray-400">{stat.change}</span>
               </div>
               <h3 className="text-2xl font-bold text-white mb-1">{stat.value}</h3>
               <p className="text-gray-300 text-sm">{stat.title}</p>
@@ -108,7 +108,7 @@ export function Dashboard({ userId }: DashboardProps) {
       {currentActivity && (
         <div className="bg-gray-900 rounded-xl border border-gray-700 p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
+            <div className="w-3 h-3 bg-gray-200 rounded-full animate-pulse" />
             <h2 className="text-lg font-semibold text-white">Current Activity</h2>
           </div>
           <div className="flex items-center justify-between">
@@ -125,7 +125,7 @@ export function Dashboard({ userId }: DashboardProps) {
                   <div
                     key={i}
                     className={`w-2 h-2 rounded-full ${
-                      i < currentActivity.productivity_score ? 'bg-green-500' : 'bg-gray-300'
+                      i < currentActivity.productivity_score ? 'bg-gray-200' : 'bg-gray-600'
                     }`}
                   />
                 ))}
@@ -144,8 +144,8 @@ export function Dashboard({ userId }: DashboardProps) {
             <div key={activity.id} className="flex items-center justify-between py-2">
               <div className="flex items-center gap-3">
                 <div className={`w-2 h-2 rounded-full ${
-                  activity.productivity_score >= 4 ? 'bg-green-500' :
-                  activity.productivity_score >= 3 ? 'bg-yellow-500' : 'bg-red-500'
+                  activity.productivity_score >= 4 ? 'bg-gray-200' :
+                  activity.productivity_score >= 3 ? 'bg-gray-400' : 'bg-gray-600'
                 }`} />
                 <div>
                   <p className="font-medium text-white">{activity.name}</p>
@@ -167,22 +167,22 @@ export function Dashboard({ userId }: DashboardProps) {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white">
+        <div className="bg-gray-800 rounded-xl p-6 text-white">
           <CheckCircle className="w-8 h-8 mb-3" />
           <h3 className="text-lg font-semibold mb-2">Start Focus Session</h3>
-          <p className="text-blue-100 text-sm">Begin a 25-minute Pomodoro session</p>
+          <p className="text-gray-400 text-sm">Begin a 25-minute Pomodoro session</p>
         </div>
-        
-        <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white">
+
+        <div className="bg-gray-800 rounded-xl p-6 text-white">
           <Target className="w-8 h-8 mb-3" />
           <h3 className="text-lg font-semibold mb-2">Set New Goal</h3>
-          <p className="text-green-100 text-sm">Create a productivity goal</p>
+          <p className="text-gray-400 text-sm">Create a productivity goal</p>
         </div>
-        
-        <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-white">
+
+        <div className="bg-gray-800 rounded-xl p-6 text-white">
           <AlertCircle className="w-8 h-8 mb-3" />
           <h3 className="text-lg font-semibold mb-2">View Analytics</h3>
-          <p className="text-purple-100 text-sm">Check your progress trends</p>
+          <p className="text-gray-400 text-sm">Check your progress trends</p>
         </div>
       </div>
     </div>

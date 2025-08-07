@@ -31,8 +31,8 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     <div className="w-64 bg-black text-white border-r border-gray-700 h-screen flex flex-col">
       <div className="p-6 border-b border-gray-700">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
-            <BarChart3 className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 bg-white text-black rounded-lg flex items-center justify-center">
+            <BarChart3 className="w-6 h-6" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-white">RizeTracker</h1>

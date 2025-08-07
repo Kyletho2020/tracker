@@ -22,19 +22,19 @@ export function FocusTimer({ userId }: FocusTimerProps) {
   const modeConfig = {
     pomodoro: {
       label: 'Focus Time',
-      color: 'from-red-500 to-red-600',
+      color: 'from-gray-800 to-gray-900',
       icon: Clock,
       description: 'Time to focus and be productive'
     },
     short_break: {
       label: 'Short Break',
-      color: 'from-green-500 to-green-600',
+      color: 'from-gray-800 to-gray-900',
       icon: Coffee,
       description: 'Take a quick 5-minute break'
     },
     long_break: {
       label: 'Long Break',
-      color: 'from-blue-500 to-blue-600',
+      color: 'from-gray-800 to-gray-900',
       icon: Coffee,
       description: 'Enjoy a longer 15-minute break'
     }
@@ -48,8 +48,8 @@ export function FocusTimer({ userId }: FocusTimerProps) {
   return (
     <div className="p-6 max-w-2xl mx-auto">
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Focus Timer</h1>
-        <p className="text-gray-600">Stay focused with the Pomodoro Technique</p>
+        <h1 className="text-2xl font-bold text-white mb-2">Focus Timer</h1>
+        <p className="text-gray-400">Stay focused with the Pomodoro Technique</p>
       </div>
 
       {/* Timer Card */}
@@ -115,8 +115,8 @@ export function FocusTimer({ userId }: FocusTimerProps) {
       </div>
 
       {/* Mode Selector */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Timer Mode</h3>
+      <div className="bg-gray-900 rounded-xl border border-gray-700 p-6 mb-6">
+        <h3 className="text-lg font-semibold text-white mb-4">Timer Mode</h3>
         <div className="grid grid-cols-3 gap-3">
           {(Object.keys(modeConfig) as TimerMode[]).map((timerMode) => (
             <button
@@ -124,16 +124,16 @@ export function FocusTimer({ userId }: FocusTimerProps) {
               onClick={() => switchMode(timerMode)}
               className={`p-4 rounded-lg border-2 transition-colors ${
                 mode === timerMode
-                  ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                  : 'border-gray-200 hover:border-gray-300'
+                  ? 'border-white bg-gray-800 text-white'
+                  : 'border-gray-700 hover:border-gray-500 text-gray-300'
               }`}
             >
               <div className="text-center">
                 <div className="font-semibold capitalize">
                   {timerMode.replace('_', ' ')}
                 </div>
-                <div className="text-sm text-gray-500">
-                  {timerMode === 'pomodoro' ? '25 min' : 
+                <div className="text-sm text-gray-400">
+                  {timerMode === 'pomodoro' ? '25 min' :
                    timerMode === 'short_break' ? '5 min' : '15 min'}
                 </div>
               </div>
@@ -143,20 +143,20 @@ export function FocusTimer({ userId }: FocusTimerProps) {
       </div>
 
       {/* Stats */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Today's Progress</h3>
+      <div className="bg-gray-900 rounded-xl border border-gray-700 p-6">
+        <h3 className="text-lg font-semibold text-white mb-4">Today's Progress</h3>
         <div className="grid grid-cols-2 gap-6">
           <div className="text-center">
-            <div className="text-3xl font-bold text-indigo-600 mb-1">
+            <div className="text-3xl font-bold text-white mb-1">
               {completedSessions}
             </div>
-            <div className="text-gray-600">Completed Sessions</div>
+            <div className="text-gray-400">Completed Sessions</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-green-600 mb-1">
+            <div className="text-3xl font-bold text-white mb-1">
               {Math.floor(completedSessions * 25 / 60)}h {(completedSessions * 25) % 60}m
             </div>
-            <div className="text-gray-600">Focus Time</div>
+            <div className="text-gray-400">Focus Time</div>
           </div>
         </div>
       </div>
