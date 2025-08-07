@@ -12,11 +12,12 @@ import { usePomodoroTimer } from '../hooks/usePomodoroTimer';
 
 interface DashboardProps {
   userId: string;
+  onTabChange: (tab: string) => void;
 }
 
-export function Dashboard({ userId }: DashboardProps) {
+export function Dashboard({ userId, onTabChange }: DashboardProps) {
   const { activities, currentActivity, isTracking } = useActivityTracker(userId);
-  const { completedSessions } = usePomodoroTimer(userId);
+  const { completedSessions, startTimer } = usePomodoroTimer(userId);
 
   // Calculate today's stats
   const today = new Date().toDateString();
@@ -167,19 +168,31 @@ export function Dashboard({ userId }: DashboardProps) {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gray-800 rounded-xl p-6 text-white">
+        <div
+          className="bg-gray-800 rounded-xl p-6 text-white cursor-pointer hover:bg-gray-700"
+          onClick={() => {
+            startTimer();
+            onTabChange('timer');
+          }}
+        >
           <CheckCircle className="w-8 h-8 mb-3" />
           <h3 className="text-lg font-semibold mb-2">Start Focus Session</h3>
           <p className="text-gray-400 text-sm">Begin a 25-minute Pomodoro session</p>
         </div>
 
-        <div className="bg-gray-800 rounded-xl p-6 text-white">
+        <div
+          className="bg-gray-800 rounded-xl p-6 text-white cursor-pointer hover:bg-gray-700"
+          onClick={() => onTabChange('goals')}
+        >
           <Target className="w-8 h-8 mb-3" />
           <h3 className="text-lg font-semibold mb-2">Set New Goal</h3>
           <p className="text-gray-400 text-sm">Create a productivity goal</p>
         </div>
 
-        <div className="bg-gray-800 rounded-xl p-6 text-white">
+        <div
+          className="bg-gray-800 rounded-xl p-6 text-white cursor-pointer hover:bg-gray-700"
+          onClick={() => onTabChange('analytics')}
+        >
           <AlertCircle className="w-8 h-8 mb-3" />
           <h3 className="text-lg font-semibold mb-2">View Analytics</h3>
           <p className="text-gray-400 text-sm">Check your progress trends</p>

@@ -29,7 +29,7 @@ function App() {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard userId={user.id} />;
+        return <Dashboard userId={user.id} onTabChange={setActiveTab} />;
       case 'timer':
         return <FocusTimer userId={user.id} />;
       case 'activities':
@@ -56,7 +56,7 @@ function App() {
           </div>
         );
       default:
-        return <Dashboard userId={user.id} />;
+        return <Dashboard userId={user.id} onTabChange={setActiveTab} />;
     }
   };
 
