@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   Globe,
   Monitor,
@@ -7,14 +7,14 @@ import {
   TrendingUp,
   TrendingDown
 } from 'lucide-react';
-import { useActivityTracker } from '../hooks/useActivityTracker';
+import { ActivityTrackerContext } from '../hooks/useActivityTracker';
 
-interface ActivitiesProps {
-  userId: string;
-}
-
-export function Activities({ userId }: ActivitiesProps) {
-  const { activities, isTracking, startTracking, stopTracking } = useActivityTracker(userId);
+export function Activities() {
+  const tracker = useContext(ActivityTrackerContext);
+  if (!tracker) {
+    throw new Error('ActivityTrackerContext not found');
+  }
+  const { activities, isTracking, startTracking, stopTracking } = tracker;
   const [filter, setFilter] = useState<'all' | 'website' | 'application'>('all');
   const [searchTerm, setSearchTerm] = useState('');
 

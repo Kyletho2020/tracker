@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, createContext, ReactNode } from 'react';
 import { Activity } from '../types';
 import { dbHelpers } from '../lib/supabase';
 
@@ -102,4 +102,22 @@ export function useActivityTracker(userId: string | undefined) {
     startTracking,
     stopTracking,
   };
+}
+
+export type ActivityTrackerContextType = ReturnType<typeof useActivityTracker>;
+
+export const ActivityTrackerContext = createContext<ActivityTrackerContextType | null>(null);
+
+interface ActivityTrackerProviderProps {
+  userId: string | undefined;
+  children: ReactNode;
+}
+
+export function ActivityTrackerProvider({ userId, children }: ActivityTrackerProviderProps) {
+  const tracker = useActivityTracker(userId);
+  return (
+    <ActivityTrackerContext.Provider value={tracker}>
+      {children}
+    </ActivityTrackerContext.Provider>
+  );
 }

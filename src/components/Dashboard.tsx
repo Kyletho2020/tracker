@@ -1,13 +1,13 @@
-import React from 'react';
-import { 
-  Clock, 
-  Target, 
-  TrendingUp, 
+import React, { useContext } from 'react';
+import {
+  Clock,
+  Target,
+  TrendingUp,
   Activity,
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
-import { useActivityTracker } from '../hooks/useActivityTracker';
+import { ActivityTrackerContext } from '../hooks/useActivityTracker';
 import { usePomodoroTimer } from '../hooks/usePomodoroTimer';
 
 interface DashboardProps {
@@ -15,7 +15,11 @@ interface DashboardProps {
 }
 
 export function Dashboard({ userId }: DashboardProps) {
-  const { activities, currentActivity, isTracking } = useActivityTracker(userId);
+  const tracker = useContext(ActivityTrackerContext);
+  if (!tracker) {
+    throw new Error('ActivityTrackerContext not found');
+  }
+  const { activities, currentActivity, isTracking } = tracker;
   const { completedSessions } = usePomodoroTimer(userId);
 
   // Calculate today's stats

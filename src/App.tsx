@@ -6,6 +6,7 @@ import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
 import { FocusTimer } from './components/FocusTimer';
 import { Activities } from './components/Activities';
+import { ActivityTrackerProvider } from './hooks/useActivityTracker';
 
 function App() {
   const { user, loading } = useAuth();
@@ -33,7 +34,7 @@ function App() {
       case 'timer':
         return <FocusTimer userId={user.id} />;
       case 'activities':
-        return <Activities userId={user.id} />;
+        return <Activities />;
       case 'goals':
         return (
           <div className="p-6">
@@ -61,12 +62,14 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex">
-      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-      <main className="flex-1 overflow-auto">
-        {renderContent()}
-      </main>
-    </div>
+    <ActivityTrackerProvider userId={user.id}>
+      <div className="min-h-screen bg-black text-white flex">
+        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        <main className="flex-1 overflow-auto">
+          {renderContent()}
+        </main>
+      </div>
+    </ActivityTrackerProvider>
   );
 }
 
