@@ -71,15 +71,15 @@ export function Dashboard({ userId }: DashboardProps) {
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 bg-black min-h-screen text-white">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600">Welcome back! Here's your productivity overview.</p>
+          <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+          <p className="text-gray-300">Welcome back! Here's your productivity overview.</p>
         </div>
         <div className="flex items-center gap-2">
           <div className={`w-3 h-3 rounded-full ${isTracking ? 'bg-green-500' : 'bg-gray-400'}`} />
-          <span className="text-sm font-medium text-gray-700">
+          <span className="text-sm font-medium text-gray-300">
             {isTracking ? 'Tracking Active' : 'Tracking Paused'}
           </span>
         </div>
@@ -90,15 +90,15 @@ export function Dashboard({ userId }: DashboardProps) {
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
-            <div key={index} className="bg-white rounded-xl border border-gray-200 p-6">
+            <div key={index} className="bg-gray-900 rounded-xl border border-gray-700 p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className={`w-12 h-12 ${stat.color} rounded-lg flex items-center justify-center`}>
                   <Icon className="w-6 h-6 text-white" />
                 </div>
                 <span className="text-sm font-medium text-green-600">{stat.change}</span>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</h3>
-              <p className="text-gray-600 text-sm">{stat.title}</p>
+              <h3 className="text-2xl font-bold text-white mb-1">{stat.value}</h3>
+              <p className="text-gray-300 text-sm">{stat.title}</p>
             </div>
           );
         })}
@@ -106,17 +106,17 @@ export function Dashboard({ userId }: DashboardProps) {
 
       {/* Current Activity */}
       {currentActivity && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-gray-900 rounded-xl border border-gray-700 p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-            <h2 className="text-lg font-semibold text-gray-900">Current Activity</h2>
+            <h2 className="text-lg font-semibold text-white">Current Activity</h2>
           </div>
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-xl font-bold text-gray-900">{currentActivity.name}</h3>
-              <p className="text-gray-600">{currentActivity.category}</p>
+              <h3 className="text-xl font-bold text-white">{currentActivity.name}</h3>
+              <p className="text-gray-300">{currentActivity.category}</p>
               {currentActivity.url && (
-                <p className="text-sm text-gray-500">{currentActivity.url}</p>
+                <p className="text-sm text-gray-400">{currentActivity.url}</p>
               )}
             </div>
             <div className="text-right">
@@ -130,33 +130,33 @@ export function Dashboard({ userId }: DashboardProps) {
                   />
                 ))}
               </div>
-              <p className="text-sm text-gray-500">Productivity Score</p>
+              <p className="text-sm text-gray-400">Productivity Score</p>
             </div>
           </div>
         </div>
       )}
 
       {/* Recent Activities */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activities</h2>
+      <div className="bg-gray-900 rounded-xl border border-gray-700 p-6">
+        <h2 className="text-lg font-semibold text-white mb-4">Recent Activities</h2>
         <div className="space-y-3">
           {todayActivities.slice(0, 5).map((activity) => (
             <div key={activity.id} className="flex items-center justify-between py-2">
               <div className="flex items-center gap-3">
                 <div className={`w-2 h-2 rounded-full ${
-                  activity.productivity_score >= 4 ? 'bg-green-500' : 
+                  activity.productivity_score >= 4 ? 'bg-green-500' :
                   activity.productivity_score >= 3 ? 'bg-yellow-500' : 'bg-red-500'
                 }`} />
                 <div>
-                  <p className="font-medium text-gray-900">{activity.name}</p>
-                  <p className="text-sm text-gray-500">{activity.category}</p>
+                  <p className="font-medium text-white">{activity.name}</p>
+                  <p className="text-sm text-gray-400">{activity.category}</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-medium text-white">
                   {formatDuration(activity.duration)}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-400">
                   {new Date(activity.timestamp).toLocaleTimeString()}
                 </p>
               </div>
