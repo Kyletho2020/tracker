@@ -109,4 +109,33 @@ export const dbHelpers = {
     if (error) throw error;
     return data as Goal[];
   },
+
+  async getActivityStats(userId: string) {
+    const { data, error } = await supabase
+      .from('activities')
+      .select(
+        "date:date_trunc('day', timestamp), total_duration:sum(duration), average_productivity:avg(productivity_score)"
+      )
+      .eq('user_id', userId)
+      .group('date')
+      .order('date');
+
+    if (error) throw error;
+    return data as { date: string; total_duration: number; average_productivity: number }[];
+  },
+
+  async getPomodoroStats(userId: string) {
+    const { data, error } = await supabase
+      .from('focus_sessions')
+      .select(
+        "date:date_trunc('day', start_time), completed_sessions:count(id)"
+      )
+      .eq('user_id', userId)
+      .eq('completed', true)
+      .group('date')
+      .order('date');
+
+    if (error) throw error;
+    return data as { date: string; completed_sessions: number }[];
+  },
 };
