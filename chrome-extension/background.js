@@ -1,14 +1,35 @@
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase client
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 // Background service worker for Chrome extension
 let currentTab = null;
 let startTime = null;
 let isTracking = false;
 let pomodoroTimer = null;
+let pomodoroStartTime = null;
 let pomodoroState = {
   isActive: false,
   timeLeft: 25 * 60, // 25 minutes in seconds
   mode: 'pomodoro', // 'pomodoro', 'short_break', 'long_break'
   completedSessions: 0
 };
+
+const POMODORO_DURATIONS = {
+  pomodoro: 25 * 60,
+  short_break: 5 * 60,
+  long_break: 15 * 60
+};
+
+initializeSupabase();
+
+async function initializeSupabase() {
+  await restoreSession();
+  await syncPendingActivities();
+}
 
 // Website categorization
 const WEBSITE_CATEGORIES = {
@@ -117,14 +138,15 @@ async function recordCurrentActivity() {
     category: categoryInfo.category,
     duration: duration,
     timestamp: new Date(startTime).toISOString(),
-    productivity_score: categoryInfo.productivity
+    productivity_score: categoryInfo.productivity,
+    synced: false
   };
 
   // Store activity locally
   await storeActivity(activity);
 
-  // Send to main app if configured
-  await syncWithMainApp(activity);
+  // Sync with Supabase
+  await syncActivityWithSupabase(activity);
 }
 
 // Store activity in local storage
@@ -183,43 +205,83 @@ async function updateDailyStats(activity) {
   }
 }
 
-// Sync with main app (if configured)
-async function syncWithMainApp(activity) {
+// Sync activity with Supabase
+async function syncActivityWithSupabase(activity) {
   try {
-    const { supabaseConfig, userToken } = await chrome.storage.local.get([
-      'supabaseConfig',
-      'userToken'
+    const { error } = await supabase.from('activities').insert([
+      {
+        type: activity.type,
+        name: activity.name,
+        url: activity.url,
+        category: activity.category,
+        duration: activity.duration,
+        timestamp: activity.timestamp,
+        productivity_score: activity.productivity_score
+      }
     ]);
 
-    if (!supabaseConfig || !userToken) return;
-
-    const supabaseUrl = supabaseConfig.url || supabaseConfig.supabaseUrl;
-    const supabaseAnonKey = supabaseConfig.anonKey || supabaseConfig.supabaseAnonKey;
-
-    if (!supabaseUrl || !supabaseAnonKey) return;
-
-    // Extract user ID from JWT token
-    const payload = JSON.parse(atob(userToken.split('.')[1]));
-    const userId = payload?.sub;
-    if (!userId) throw new Error('Invalid user token');
-
-    const response = await fetch(`${supabaseUrl}/rest/v1/activities`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: supabaseAnonKey,
-        Authorization: `Bearer ${userToken}`
-      },
-      body: JSON.stringify([{ ...activity, user_id: userId }])
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Failed to sync activity:', errorText);
+    if (error) {
+      console.error('Failed to sync activity:', error);
+    } else {
+      await markActivitySynced(activity.id);
     }
   } catch (error) {
-    console.error('Error syncing with main app:', error);
+    console.error('Error syncing activity with Supabase:', error);
   }
+}
+
+// Sync focus session with Supabase
+async function syncFocusSession(session) {
+  try {
+    const { error } = await supabase.from('focus_sessions').insert([session]);
+    if (error) {
+      console.error('Failed to sync focus session:', error);
+    }
+  } catch (error) {
+    console.error('Error syncing focus session with Supabase:', error);
+  }
+}
+
+// Restore Supabase session from storage
+async function restoreSession() {
+  const { supabaseSession } = await chrome.storage.local.get(['supabaseSession']);
+  if (supabaseSession) {
+    await supabase.auth.setSession(supabaseSession);
+  }
+}
+
+// Sync any unsynced activities from local storage
+async function syncPendingActivities() {
+  const { activities } = await chrome.storage.local.get(['activities']);
+  if (!activities) return;
+
+  const unsynced = activities.filter(a => !a.synced);
+  if (unsynced.length === 0) return;
+
+  const payload = unsynced.map(a => ({
+    type: a.type,
+    name: a.name,
+    url: a.url,
+    category: a.category,
+    duration: a.duration,
+    timestamp: a.timestamp,
+    productivity_score: a.productivity_score
+  }));
+
+  const { error } = await supabase.from('activities').insert(payload);
+  if (error) {
+    console.error('Failed to sync pending activities:', error);
+  } else {
+    const updated = activities.map(a => ({ ...a, synced: true }));
+    await chrome.storage.local.set({ activities: updated });
+  }
+}
+
+async function markActivitySynced(id) {
+  const { activities } = await chrome.storage.local.get(['activities']);
+  if (!activities) return;
+  const updated = activities.map(a => (a.id === id ? { ...a, synced: true } : a));
+  await chrome.storage.local.set({ activities: updated });
 }
 
 // Pomodoro timer functions
@@ -229,7 +291,8 @@ function startPomodoroTimer() {
   }
 
   pomodoroState.isActive = true;
-  
+  pomodoroStartTime = Date.now();
+
   pomodoroTimer = setInterval(async () => {
     pomodoroState.timeLeft--;
     
@@ -258,13 +321,10 @@ function resetPomodoroTimer() {
     clearInterval(pomodoroTimer);
     pomodoroTimer = null;
   }
-  
-  const durations = {
-    pomodoro: 25 * 60,
-    short_break: 5 * 60,
-    long_break: 15 * 60
-  };
-  
+  pomodoroStartTime = null;
+
+  const durations = POMODORO_DURATIONS;
+
   pomodoroState.isActive = false;
   pomodoroState.timeLeft = durations[pomodoroState.mode];
   chrome.storage.local.set({ pomodoroState });
@@ -273,7 +333,15 @@ function resetPomodoroTimer() {
 
 async function handlePomodoroComplete() {
   pausePomodoroTimer();
-  
+
+  await syncFocusSession({
+    type: pomodoroState.mode,
+    duration: POMODORO_DURATIONS[pomodoroState.mode],
+    completed: true,
+    start_time: new Date(pomodoroStartTime).toISOString(),
+    end_time: new Date().toISOString()
+  });
+
   if (pomodoroState.mode === 'pomodoro') {
     pomodoroState.completedSessions++;
     
@@ -302,16 +370,12 @@ async function handlePomodoroComplete() {
 }
 
 function switchPomodoroMode(mode) {
-  const durations = {
-    pomodoro: 25 * 60,
-    short_break: 5 * 60,
-    long_break: 15 * 60
-  };
-  
+  const durations = POMODORO_DURATIONS;
+
   pomodoroState.mode = mode;
   pomodoroState.timeLeft = durations[mode];
   pomodoroState.isActive = false;
-  
+
   chrome.storage.local.set({ pomodoroState });
   updateBadge();
 }
@@ -332,52 +396,90 @@ function updateBadge() {
 
 // Message handling from popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  switch (request.action) {
-    case 'startTracking':
-      isTracking = true;
-      chrome.storage.local.set({ isTracking: true });
-      updateBadge();
-      sendResponse({ success: true });
-      break;
-      
-    case 'stopTracking':
-      isTracking = false;
-      recordCurrentActivity();
-      currentTab = null;
-      startTime = null;
-      chrome.storage.local.set({ isTracking: false });
-      updateBadge();
-      sendResponse({ success: true });
-      break;
-      
-    case 'startPomodoro':
-      startPomodoroTimer();
-      sendResponse({ success: true });
-      break;
-      
-    case 'pausePomodoro':
-      pausePomodoroTimer();
-      sendResponse({ success: true });
-      break;
-      
-    case 'resetPomodoro':
-      resetPomodoroTimer();
-      sendResponse({ success: true });
-      break;
-      
-    case 'switchPomodoroMode':
-      switchPomodoroMode(request.mode);
-      sendResponse({ success: true });
-      break;
-      
-    case 'getState':
-      sendResponse({
-        isTracking,
-        pomodoroState,
-        currentTab
-      });
-      break;
-  }
+  (async () => {
+    switch (request.action) {
+      case 'startTracking':
+        isTracking = true;
+        chrome.storage.local.set({ isTracking: true });
+        updateBadge();
+        sendResponse({ success: true });
+        break;
+
+      case 'stopTracking':
+        isTracking = false;
+        recordCurrentActivity();
+        currentTab = null;
+        startTime = null;
+        chrome.storage.local.set({ isTracking: false });
+        updateBadge();
+        sendResponse({ success: true });
+        break;
+
+      case 'startPomodoro':
+        startPomodoroTimer();
+        sendResponse({ success: true });
+        break;
+
+      case 'pausePomodoro':
+        pausePomodoroTimer();
+        sendResponse({ success: true });
+        break;
+
+      case 'resetPomodoro':
+        resetPomodoroTimer();
+        sendResponse({ success: true });
+        break;
+
+      case 'switchPomodoroMode':
+        switchPomodoroMode(request.mode);
+        sendResponse({ success: true });
+        break;
+
+      case 'login':
+        try {
+          if (request.provider) {
+            const { data, error } = await supabase.auth.signInWithOAuth({
+              provider: request.provider
+            });
+            if (error) {
+              sendResponse({ success: false, error: error.message });
+            } else {
+              sendResponse({ success: true, url: data.url });
+            }
+          } else {
+            const { data, error } = await supabase.auth.signInWithPassword({
+              email: request.email,
+              password: request.password
+            });
+            if (error) {
+              sendResponse({ success: false, error: error.message });
+            } else {
+              await chrome.storage.local.set({ supabaseSession: data.session });
+              await syncPendingActivities();
+              sendResponse({ success: true });
+            }
+          }
+        } catch (error) {
+          sendResponse({ success: false, error: error.message });
+        }
+        break;
+
+      case 'logout':
+        await supabase.auth.signOut();
+        await chrome.storage.local.remove('supabaseSession');
+        sendResponse({ success: true });
+        break;
+
+      case 'getState':
+        sendResponse({
+          isTracking,
+          pomodoroState,
+          currentTab
+        });
+        break;
+    }
+  })();
+  return true;
 });
 
 // Utility function to generate IDs
