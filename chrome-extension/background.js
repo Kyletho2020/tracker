@@ -1,4 +1,8 @@
 // Background service worker for Chrome extension
+// Supabase project configuration
+const SUPABASE_URL = 'https://YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
 let currentTab = null;
 let startTime = null;
 let isTracking = false;
@@ -97,6 +101,9 @@ async function startTrackingNewTab(tabId) {
 async function recordCurrentActivity() {
   if (!currentTab || !startTime) return;
 
+  const { supabaseSession } = await chrome.storage.local.get(['supabaseSession']);
+  if (!supabaseSession) return;
+
   const endTime = Date.now();
   const duration = Math.floor((endTime - startTime) / 1000); // Duration in seconds
 
@@ -186,31 +193,17 @@ async function updateDailyStats(activity) {
 // Sync with main app (if configured)
 async function syncWithMainApp(activity) {
   try {
-    const { supabaseConfig, userToken } = await chrome.storage.local.get([
-      'supabaseConfig',
-      'userToken'
-    ]);
+    const { supabaseSession } = await chrome.storage.local.get(['supabaseSession']);
+    if (!supabaseSession) return;
 
-    if (!supabaseConfig || !userToken) return;
-
-    const supabaseUrl = supabaseConfig.url || supabaseConfig.supabaseUrl;
-    const supabaseAnonKey = supabaseConfig.anonKey || supabaseConfig.supabaseAnonKey;
-
-    if (!supabaseUrl || !supabaseAnonKey) return;
-
-    // Extract user ID from JWT token
-    const payload = JSON.parse(atob(userToken.split('.')[1]));
-    const userId = payload?.sub;
-    if (!userId) throw new Error('Invalid user token');
-
-    const response = await fetch(`${supabaseUrl}/rest/v1/activities`, {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/activities`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        apikey: supabaseAnonKey,
-        Authorization: `Bearer ${userToken}`
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${supabaseSession.access_token}`,
       },
-      body: JSON.stringify([{ ...activity, user_id: userId }])
+      body: JSON.stringify([{ ...activity, user_id: supabaseSession.user.id }]),
     });
 
     if (!response.ok) {
@@ -334,11 +327,17 @@ function updateBadge() {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.action) {
     case 'startTracking':
-      isTracking = true;
-      chrome.storage.local.set({ isTracking: true });
-      updateBadge();
-      sendResponse({ success: true });
-      break;
+      chrome.storage.local.get(['supabaseSession']).then(({ supabaseSession }) => {
+        if (supabaseSession) {
+          isTracking = true;
+          chrome.storage.local.set({ isTracking: true });
+          updateBadge();
+          sendResponse({ success: true });
+        } else {
+          sendResponse({ success: false, error: 'Please sign in first' });
+        }
+      });
+      return true;
       
     case 'stopTracking':
       isTracking = false;
