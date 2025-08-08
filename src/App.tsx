@@ -6,6 +6,7 @@ import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
 import { FocusTimer } from './components/FocusTimer';
 import { Activities } from './components/Activities';
+import { Analytics } from './components/Analytics';
 
 function App() {
   const { user, loading } = useAuth();
@@ -42,12 +43,7 @@ function App() {
           </div>
         );
       case 'analytics':
-        return (
-          <div className="p-6">
-            <h1 className="text-2xl font-bold text-white mb-4">Analytics</h1>
-            <p className="text-gray-400">Advanced analytics coming soon...</p>
-          </div>
-        );
+        return <Analytics userId={user.id} />;
       case 'settings':
         return (
           <div className="p-6">
