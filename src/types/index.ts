@@ -55,3 +55,14 @@ export interface UserSettings {
   notifications_enabled: boolean;
   auto_categorization: boolean;
 }
+
+export interface ActivityStats {
+  date: string;
+  total_duration: number;
+  average_productivity: number;
+}
+
+export interface PomodoroStats {
+  date: string;
+  completed_sessions: number;
+}
