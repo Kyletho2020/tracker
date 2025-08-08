@@ -5,6 +5,11 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+// Sync pending activities when connectivity is restored
+self.addEventListener('online', () => {
+  syncPendingActivities();
+});
+
 // Background service worker for Chrome extension
 let currentTab = null;
 let startTime = null;
@@ -208,24 +213,35 @@ async function updateDailyStats(activity) {
 // Sync activity with Supabase
 async function syncActivityWithSupabase(activity) {
   try {
-    const { error } = await supabase.from('activities').insert([
-      {
-        type: activity.type,
-        name: activity.name,
-        url: activity.url,
-        category: activity.category,
-        duration: activity.duration,
-        timestamp: activity.timestamp,
-        productivity_score: activity.productivity_score
-      }
-    ]);
+    if (!navigator.onLine) {
+      await queueActivity(activity);
+      return;
+    }
+
+    const { error } = await supabase
+      .from('activities')
+      .upsert([
+        {
+          id: activity.id,
+          type: activity.type,
+          name: activity.name,
+          url: activity.url,
+          category: activity.category,
+          duration: activity.duration,
+          timestamp: activity.timestamp,
+          productivity_score: activity.productivity_score
+        }
+      ], { onConflict: 'id' });
 
     if (error) {
       console.error('Failed to sync activity:', error);
+      await queueActivity(activity);
     } else {
       await markActivitySynced(activity.id);
+      await removeFromQueue(activity.id);
     }
   } catch (error) {
+    await queueActivity(activity);
     console.error('Error syncing activity with Supabase:', error);
   }
 }
@@ -252,13 +268,16 @@ async function restoreSession() {
 
 // Sync any unsynced activities from local storage
 async function syncPendingActivities() {
-  const { activities } = await chrome.storage.local.get(['activities']);
-  if (!activities) return;
+  const { activityQueue = [], activities = [] } = await chrome.storage.local.get([
+    'activityQueue',
+    'activities'
+  ]);
+  if (activityQueue.length === 0 || !navigator.onLine) return;
 
-  const unsynced = activities.filter(a => !a.synced);
-  if (unsynced.length === 0) return;
+  const resolved = resolveConflicts(activityQueue);
 
-  const payload = unsynced.map(a => ({
+  const payload = resolved.map(a => ({
+    id: a.id,
     type: a.type,
     name: a.name,
     url: a.url,
@@ -268,13 +287,54 @@ async function syncPendingActivities() {
     productivity_score: a.productivity_score
   }));
 
-  const { error } = await supabase.from('activities').insert(payload);
+  const { error } = await supabase
+    .from('activities')
+    .upsert(payload, { onConflict: 'id' });
   if (error) {
     console.error('Failed to sync pending activities:', error);
   } else {
-    const updated = activities.map(a => ({ ...a, synced: true }));
-    await chrome.storage.local.set({ activities: updated });
+    const updated = activities.map(a =>
+      resolved.find(r => r.id === a.id) ? { ...a, synced: true } : a
+    );
+    await chrome.storage.local.set({ activities: updated, activityQueue: [] });
   }
+}
+
+function resolveConflicts(queue) {
+  const sorted = [...queue].sort(
+    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+  );
+  const result = [];
+  const latestByDomain = {};
+
+  for (const activity of sorted) {
+    const key = activity.domain || activity.url || activity.name;
+    const start = new Date(activity.timestamp).getTime();
+    const end = start + activity.duration * 1000;
+    const existing = latestByDomain[key];
+    if (existing && start < existing.end) {
+      const index = result.findIndex(r => r.id === existing.activity.id);
+      if (index !== -1) {
+        result.splice(index, 1);
+      }
+    }
+    result.push(activity);
+    latestByDomain[key] = { activity, end };
+  }
+  return result;
+}
+
+async function queueActivity(activity) {
+  const { activityQueue = [] } = await chrome.storage.local.get(['activityQueue']);
+  if (!activityQueue.find(a => a.id === activity.id)) {
+    await chrome.storage.local.set({ activityQueue: [...activityQueue, activity] });
+  }
+}
+
+async function removeFromQueue(id) {
+  const { activityQueue = [] } = await chrome.storage.local.get(['activityQueue']);
+  const updated = activityQueue.filter(a => a.id !== id);
+  await chrome.storage.local.set({ activityQueue: updated });
 }
 
 async function markActivitySynced(id) {
