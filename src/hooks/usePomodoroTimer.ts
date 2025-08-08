@@ -21,12 +21,14 @@ export function usePomodoroTimer(userId: string | undefined) {
   const startTimer = useCallback(async () => {
     setIsActive(true);
     
-    const session: Omit<FocusSession, 'id'> = {
+    const session: Omit<
+      FocusSession & { user_id: string },
+      'id' | 'end_time' | 'completed'
+    > = {
       type: mode,
       duration: TIMER_DURATIONS[mode],
-      completed: false,
       start_time: new Date(),
-      user_id: userId,
+      user_id: userId!,
     };
 
     if (userId) {
