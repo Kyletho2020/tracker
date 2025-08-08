@@ -45,15 +45,21 @@ export function Activities({ userId }: ActivitiesProps) {
   };
 
   // Calculate category stats
-  const categoryStats = activities.reduce((acc, activity) => {
-    if (!acc[activity.category]) {
-      acc[activity.category] = { count: 0, totalTime: 0, avgProductivity: 0 };
-    }
-    acc[activity.category].count++;
-    acc[activity.category].totalTime += activity.duration;
-    acc[activity.category].avgProductivity += activity.productivity_score;
-    return acc;
-  }, {} as Record<string, { count: number; totalTime: number; avgProductivity: number }>);
+  const categoryStats = activities.reduce(
+    (
+      acc: Record<string, { count: number; totalTime: number; avgProductivity: number }>,
+      activity
+    ) => {
+      if (!acc[activity.category]) {
+        acc[activity.category] = { count: 0, totalTime: 0, avgProductivity: 0 };
+      }
+      acc[activity.category].count++;
+      acc[activity.category].totalTime += activity.duration;
+      acc[activity.category].avgProductivity += activity.productivity_score;
+      return acc;
+    },
+    {} as Record<string, { count: number; totalTime: number; avgProductivity: number }>
+  );
 
   Object.keys(categoryStats).forEach(category => {
     categoryStats[category].avgProductivity /= categoryStats[category].count;

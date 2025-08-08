@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { Activity, FocusSession, Goal } from '../types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -12,18 +13,22 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Database helper functions
 export const dbHelpers = {
   // Activities
-  async createActivity(activity: Omit<Activity, 'id'>) {
+  async createActivity(activity: Omit<Activity & { user_id: string }, 'id'>) {
     const { data, error } = await supabase
       .from('activities')
       .insert([activity])
       .select()
       .single();
-    
+
     if (error) throw error;
-    return data;
+    return data as Activity;
   },
 
-  async getActivities(userId: string, startDate?: Date, endDate?: Date) {
+  async getActivities(
+    userId: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<Activity[]> {
     let query = supabase
       .from('activities')
       .select('*')
@@ -39,19 +44,21 @@ export const dbHelpers = {
 
     const { data, error } = await query;
     if (error) throw error;
-    return data;
+    return data as Activity[];
   },
 
   // Focus Sessions
-  async createFocusSession(session: Omit<FocusSession, 'id'>) {
+  async createFocusSession(
+    session: Omit<FocusSession & { user_id: string }, 'id' | 'end_time' | 'completed'>
+  ) {
     const { data, error } = await supabase
       .from('focus_sessions')
       .insert([session])
       .select()
       .single();
-    
+
     if (error) throw error;
-    return data;
+    return data as FocusSession;
   },
 
   async updateFocusSession(id: string, updates: Partial<FocusSession>) {
@@ -61,21 +68,23 @@ export const dbHelpers = {
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) throw error;
-    return data;
+    return data as FocusSession;
   },
 
   // Goals
-  async createGoal(goal: Omit<Goal, 'id'>) {
+  async createGoal(
+    goal: Omit<Goal & { user_id: string }, 'id' | 'progress' | 'created_at'>
+  ) {
     const { data, error } = await supabase
       .from('goals')
       .insert([goal])
       .select()
       .single();
-    
+
     if (error) throw error;
-    return data;
+    return data as Goal;
   },
 
   async updateGoal(id: string, updates: Partial<Goal>) {
@@ -85,19 +94,19 @@ export const dbHelpers = {
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) throw error;
-    return data;
+    return data as Goal;
   },
 
-  async getGoals(userId: string) {
+  async getGoals(userId: string): Promise<Goal[]> {
     const { data, error } = await supabase
       .from('goals')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
-    
+
     if (error) throw error;
-    return data;
-  }
+    return data as Goal[];
+  },
 };

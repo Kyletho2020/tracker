@@ -30,10 +30,11 @@ const DEMO_APPLICATIONS = import.meta.env.DEV
     ]
   : [];
 
-type IncomingActivity = Omit<Activity, 'timestamp'> & {
+export interface IncomingActivity
+  extends Omit<Activity, 'id' | 'timestamp'> {
   timestamp: string | Date;
   domain?: string;
-};
+}
 
 export function useActivityTracker(userId: string | undefined) {
   const [currentActivity, setCurrentActivity] = useState<Activity | null>(null);
@@ -43,7 +44,8 @@ export function useActivityTracker(userId: string | undefined) {
     (activity: IncomingActivity) => {
       const { timestamp, ...rest } = activity;
       const formatted: Activity = {
-        ...(rest as Omit<Activity, 'timestamp'>),
+        ...(rest as Activity),
+        id: crypto.randomUUID(),
         timestamp: timestamp instanceof Date ? timestamp : new Date(timestamp),
       };
 
