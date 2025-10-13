@@ -7,6 +7,7 @@ import { Dashboard } from './components/Dashboard';
 import { FocusTimer } from './components/FocusTimer';
 import { Activities } from './components/Activities';
 import { Analytics } from './components/Analytics';
+import { ScreenAssistant } from './components/ScreenAssistant';
 
 function App() {
   const { user, loading } = useAuth();
@@ -44,6 +45,8 @@ function App() {
         );
       case 'analytics':
         return <Analytics userId={user.id} />;
+      case 'assistant':
+        return <ScreenAssistant />;
       case 'settings':
         return (
           <div className="p-6">
