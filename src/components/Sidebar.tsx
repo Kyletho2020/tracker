@@ -3,7 +3,8 @@ import {
   BarChart3, 
   Clock, 
   Target, 
-  Activity, 
+  Activity,
+  MessageSquare,
   Settings, 
   LogOut,
   Timer
@@ -22,6 +23,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
     { id: 'timer', label: 'Focus Timer', icon: Timer },
     { id: 'activities', label: 'Activities', icon: Activity },
+    { id: 'assistant', label: 'Screen Assistant', icon: MessageSquare },
     { id: 'goals', label: 'Goals', icon: Target },
     { id: 'analytics', label: 'Analytics', icon: Clock },
     { id: 'settings', label: 'Settings', icon: Settings },

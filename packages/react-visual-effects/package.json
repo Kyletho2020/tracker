@@ -1,0 +1,13 @@
+{
+  "name": "react-visual-effects",
+  "version": "0.1.0",
+  "description": "Lightweight visual effect primitives for React components.",
+  "type": "module",
+  "main": "./src/index.tsx",
+  "module": "./src/index.tsx",
+  "types": "./src/index.tsx",
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  }
+}
